@@ -1,13 +1,13 @@
 import { Inject, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { VilageForecastEntity } from './entities/vilage-fcst.entity';
+import { VilageForecastEntity } from '../../common/entity/weather/vilage-fcst.entity';
 import { Repository } from 'typeorm';
-import { FreqDistrictEntity } from '../location/entities/freq-district.entity';
+import { FreqDistrictEntity } from '../../common/entity/location/freq-district.entity';
 import { LocationService } from '../location/location.service';
 import * as moment from 'moment-timezone';
-import { KmaType } from './enums/kma.enum';
-import { DailyForecastEntity } from './entities/daily-fcst.entity';
-import { UltraSrtForecastEntity } from './entities/ultra-srt-fcst.entity';
+import { KmaType } from './enum/kma.enum';
+import { DailyForecastEntity } from '../../common/entity/weather/daily-fcst.entity';
+import { UltraSrtForecastEntity } from '../../common/entity/weather/ultra-srt-fcst.entity';
 
 @Injectable()
 export class WeatherService {
@@ -73,6 +73,9 @@ export class WeatherService {
   // 일교차 심한 지 여부 판별하는 함수 (10도 차이)
   async isTempDiffHigh(baseDate, nx, ny) {
     const result = await this.dailyForecastRepository.findOne({ where: { fcstDate: baseDate, nx: nx, ny: ny } });
+    if (!result || !result.TMN || !result.TMX) {
+      return false;
+    }
     if (parseInt(result.TMX) - parseInt(result.TMN) >= 10) {
       return true;
     } else {
